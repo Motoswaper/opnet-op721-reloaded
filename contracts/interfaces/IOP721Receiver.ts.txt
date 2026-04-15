@@ -1,0 +1,11 @@
+// IOP721Receiver.ts
+import { Address, u64 } from "./IOP721";
+
+export interface IOP721Receiver {
+  onOP721Received(
+    operator: Address,
+    from: Address,
+    tokenId: u64,
+    data: Uint8Array
+  ): string; // must return a fixed selector, e.g. "OP721_RECEIVED"
+}

@@ -1,0 +1,250 @@
+// OP721.ts
+import {
+  IOP721,
+  Address,
+  u64,
+} from "./interfaces/IOP721";
+import { IOP721Metadata } from "./interfaces/IOP721Metadata";
+import { IOP721Receiver } from "./interfaces/IOP721Receiver";
+import { isZeroAddress } from "./utils/AddressUtils";
+
+// NOTE: This is written in a TypeScript/AssemblyScript style
+// suitable for OP_NET's WASM-based contract model.
+
+export class OP721 implements IOP721, IOP721Metadata {
+  // --- Storage ---
+
+  private _name: string;
+  private _symbol: string;
+
+  // tokenId => owner
+  private owners: Map<u64, Address> = new Map<u64, Address>();
+
+  // owner => balance
+  private balances: Map<Address, u64> = new Map<Address, u64>();
+
+  // tokenId => approved address
+  private tokenApprovals: Map<u64, Address> = new Map<u64, Address>();
+
+  // owner => (operator => approved)
+  private operatorApprovals: Map<Address, Map<Address, bool>> =
+    new Map<Address, Map<Address, bool>>();
+
+  // total supply (optional, but useful)
+  private _totalSupply: u64 = 0n;
+
+  // --- Constructor ---
+
+  constructor(name: string, symbol: string) {
+    this._name = name;
+    this._symbol = symbol;
+  }
+
+  // --- Metadata ---
+
+  name(): string {
+    return this._name;
+  }
+
+  symbol(): string {
+    return this._symbol;
+  }
+
+  // Override in child contracts if you want metadata URIs
+  tokenURI(_tokenId: u64): string {
+    return "";
+  }
+
+  // --- Core ERC-721 logic ---
+
+  balanceOf(owner: Address): u64 {
+    assert(!isZeroAddress(owner), "ZERO_ADDRESS");
+    const bal = this.balances.get(owner);
+    return bal != null ? bal : 0n;
+  }
+
+  ownerOf(tokenId: u64): Address {
+    const owner = this.owners.get(tokenId);
+    assert(owner != null && !isZeroAddress(owner!), "TOKEN_NOT_MINTED");
+    return owner!;
+  }
+
+  // --- Approvals ---
+
+  approve(to: Address, tokenId: u64): void {
+    const owner = this.ownerOf(tokenId);
+    const sender = this._msgSender();
+
+    assert(to != owner, "APPROVE_TO_OWNER");
+    assert(
+      sender == owner || this.isApprovedForAll(owner, sender),
+      "NOT_OWNER_NOR_OPERATOR"
+    );
+
+    this.tokenApprovals.set(tokenId, to);
+    this._emitApproval(owner, to, tokenId);
+  }
+
+  getApproved(tokenId: u64): Address | null {
+    this._requireMinted(tokenId);
+    const approved = this.tokenApprovals.get(tokenId);
+    return approved != null ? approved : null;
+  }
+
+  setApprovalForAll(operator: Address, approved: bool): void {
+    const owner = this._msgSender();
+    assert(operator != owner, "APPROVE_TO_CALLER");
+
+    let ops = this.operatorApprovals.get(owner);
+    if (ops == null) {
+      ops = new Map<Address, bool>();
+      this.operatorApprovals.set(owner, ops);
+    }
+    ops.set(operator, approved);
+
+    this._emitApprovalForAll(owner, operator, approved);
+  }
+
+  isApprovedForAll(owner: Address, operator: Address): bool {
+    const ops = this.operatorApprovals.get(owner);
+    if (ops == null) return false;
+    const approved = ops.get(operator);
+    return approved != null ? approved : false;
+  }
+
+  // --- Transfers ---
+
+  transferFrom(from: Address, to: Address, tokenId: u64): void {
+    const sender = this._msgSender();
+    this._transferInternal(sender, from, to, tokenId, false, new Uint8Array(0));
+  }
+
+  safeTransferFrom(from: Address, to: Address, tokenId: u64): void {
+    const sender = this._msgSender();
+    this._transferInternal(sender, from, to, tokenId, true, new Uint8Array(0));
+  }
+
+  safeTransferFromWithData(
+    from: Address,
+    to: Address,
+    tokenId: u64,
+    data: Uint8Array
+  ): void {
+    const sender = this._msgSender();
+    this._transferInternal(sender, from, to, tokenId, true, data);
+  }
+
+  // --- Internal transfer logic ---
+
+  private _transferInternal(
+    operator: Address,
+    from: Address,
+    to: Address,
+    tokenId: u64,
+    safe: bool,
+    data: Uint8Array
+  ): void {
+    const owner = this.ownerOf(tokenId);
+    assert(owner == from, "FROM_NOT_OWNER");
+    assert(!isZeroAddress(to), "TRANSFER_TO_ZERO_ADDRESS");
+
+    // Check authorization
+    const sender = operator;
+    const approved = this.getApproved(tokenId);
+    const isOperator = this.isApprovedForAll(owner, sender);
+    assert(
+      sender == owner || isOperator || (approved != null && approved == sender),
+      "NOT_APPROVED_NOR_OWNER"
+    );
+
+    // Clear approvals
+    this.tokenApprovals.delete(tokenId);
+
+    // Update balances
+    const fromBal = this.balanceOf(from);
+    const toBal = this.balanceOf(to);
+    this.balances.set(from, fromBal - 1n);
+    this.balances.set(to, toBal + 1n);
+
+    // Update owner
+    this.owners.set(tokenId, to);
+
+    this._emitTransfer(from, to, tokenId);
+
+    if (safe) {
+      this._checkOnOP721Received(operator, from, to, tokenId, data);
+    }
+  }
+
+  // --- Mint / Burn (for child contracts) ---
+
+  protected _mint(to: Address, tokenId: u64): void {
+    assert(!isZeroAddress(to), "MINT_TO_ZERO_ADDRESS");
+    const existing = this.owners.get(tokenId);
+    assert(existing == null || isZeroAddress(existing!), "TOKEN_ALREADY_MINTED");
+
+    this.owners.set(tokenId, to);
+    const bal = this.balanceOf(to);
+    this.balances.set(to, bal + 1n);
+    this._totalSupply += 1n;
+
+    this._emitTransfer("0x0000000000000000000000000000000000000000", to, tokenId);
+  }
+
+  protected _burn(tokenId: u64): void {
+    const owner = this.ownerOf(tokenId);
+
+    // Clear approvals
+    this.tokenApprovals.delete(tokenId);
+
+    const bal = this.balanceOf(owner);
+    this.balances.set(owner, bal - 1n);
+    this.owners.delete(tokenId);
+    this._totalSupply -= 1n;
+
+    this._emitTransfer(owner, "0x0000000000000000000000000000000000000000", tokenId);
+  }
+
+  // --- Hooks / helpers (to be wired to OP_NET runtime) ---
+
+  private _msgSender(): Address {
+    // In OP_NET, this should be wired to the runtime's "caller" primitive.
+    // Placeholder here:
+    throw new Error("_msgSender not wired to runtime");
+  }
+
+  private _requireMinted(tokenId: u64): void {
+    const owner = this.owners.get(tokenId);
+    assert(owner != null && !isZeroAddress(owner!), "TOKEN_NOT_MINTED");
+  }
+
+  private _checkOnOP721Received(
+    operator: Address,
+    from: Address,
+    to: Address,
+    tokenId: u64,
+    data: Uint8Array
+  ): void {
+    // If `to` is a contract, call onOP721Received and check return value.
+    // This requires OP_NET runtime introspection (isContract, call).
+    // Left as a hook to be implemented with OP_NET's actual APIs.
+  }
+
+  // --- Events (to be wired to OP_NET event system) ---
+
+  private _emitTransfer(from: Address, to: Address, tokenId: u64): void {
+    // emit Transfer(from, to, tokenId)
+  }
+
+  private _emitApproval(owner: Address, approved: Address, tokenId: u64): void {
+    // emit Approval(owner, approved, tokenId)
+  }
+
+  private _emitApprovalForAll(
+    owner: Address,
+    operator: Address,
+    approved: bool
+  ): void {
+    // emit ApprovalForAll(owner, operator, approved)
+  }
+}

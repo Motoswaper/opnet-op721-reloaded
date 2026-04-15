@@ -1,0 +1,6 @@
+// AddressUtils.ts
+import { Address } from "../interfaces/IOP721";
+
+export function isZeroAddress(addr: Address): bool {
+  return addr == "0x0000000000000000000000000000000000000000";
+}
