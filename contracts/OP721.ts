@@ -2,13 +2,16 @@
 
 @contract
 export class OP721 {
+  // -----------------------------
+  // Storage (final layout — do not reorder)
+  // -----------------------------
   @storage private owners: Map<u64, Address> = new Map()
   @storage private balances: Map<Address, u64> = new Map()
   @storage private tokenApprovals: Map<u64, Address> = new Map()
   @storage private operatorApprovals: Map<Address, Map<Address, bool>> = new Map()
   @storage private tokenURIs: Map<u64, string> = new Map()
 
-  // Reserved storage for future extensions
+  // Reserved storage for future extensions (do not repurpose)
   @storage private _reserved1: Map<string, string> = new Map()
   @storage private _reserved2: Map<string, string> = new Map()
 
@@ -99,15 +102,17 @@ export class OP721 {
   // -----------------------------
 
   transferFrom(from: Address, to: Address, tokenId: u64): void {
-    const owner = this.ownerOf(tokenId)
+    const owner = this.owners.get(tokenId)
+    assert(owner != null && owner != ZERO_ADDRESS, "TOKEN_NOT_MINTED")
+
     const sender = Context.sender()
 
     assert(owner == from, "NOT_OWNER")
     assert(to != ZERO_ADDRESS, "ZERO_ADDRESS")
     assert(
-      sender == owner ||
+      sender == owner! ||
       sender == this.getApproved(tokenId) ||
-      this.isApprovedForAll(owner, sender),
+      this.isApprovedForAll(owner!, sender),
       "NOT_AUTHORIZED"
     )
 
@@ -222,7 +227,7 @@ export class OP721 {
     to: Address,
     tokenId: u64
   ): void {
-    // empty for now
+    // intentionally empty
   }
 
   protected _afterTokenTransfer(
@@ -230,7 +235,6 @@ export class OP721 {
     to: Address,
     tokenId: u64
   ): void {
-    // empty for now
+    // intentionally empty
   }
-
 }
