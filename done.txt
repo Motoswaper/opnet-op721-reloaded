@@ -1,0 +1,1 @@
+Finalize OP721 Reloaded standard (contract + docs)
