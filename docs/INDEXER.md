@@ -32,3 +32,28 @@ GET /collection/:contract
 GET /transfers/:contract/:tokenId
 GET /search?query=
 ```
+## Event Schema (OP721 Reloaded)
+
+### Transfer
+- name: "Transfer"
+- args:
+  - from: Address
+  - to: Address
+  - tokenId: u64
+- description: Emitted when a token is transferred between addresses.
+
+### Approval
+- name: "Approval"
+- args:
+  - owner: Address
+  - approved: Address
+  - tokenId: u64
+- description: Emitted when a token-specific approval is set.
+
+### ApprovalForAll
+- name: "ApprovalForAll"
+- args:
+  - owner: Address
+  - operator: Address
+  - approved: bool
+- description: Emitted when an operator is approved or revoked for all tokens of an owner.
