@@ -47,6 +47,20 @@ Both standards are:
 
 ---
 
+# 📂 Repository Structure
+/contracts
+├── OP721.ts
+└── OP20.ts
+
+/docs
+├── OP721.md
+├── OP20.md
+├── INDEXER_OP721.md
+└── INDEXER_OP20.md
+
+README.md
+LICENSE
+
 ---
 
 # 🧱 Standards Included
@@ -104,6 +118,4 @@ MIT — open and free for the OP_NET ecosystem.
 **Deterministic. Minimal. Future‑proof.**
 
 </div>
-
-# 📂 Repository Structure
 
