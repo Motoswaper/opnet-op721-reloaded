@@ -1,0 +1,24 @@
+// contracts/interfaces/IOP721.ts
+
+export type Address = string
+export type u64 = bigint
+
+export interface IOP721 {
+  balanceOf(owner: Address): u64
+  ownerOf(tokenId: u64): Address
+
+  transferFrom(from: Address, to: Address, tokenId: u64): void
+  safeTransferFrom(from: Address, to: Address, tokenId: u64): void
+  safeTransferFromWithData(
+    from: Address,
+    to: Address,
+    tokenId: u64,
+    data: Uint8Array
+  ): void
+
+  approve(to: Address, tokenId: u64): void
+  setApprovalForAll(operator: Address, approved: boolean): void
+
+  getApproved(tokenId: u64): Address | null
+  isApprovedForAll(owner: Address, operator: Address): boolean
+}
