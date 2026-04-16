@@ -191,4 +191,24 @@ export class OP721 {
     assert(prev > 0, "BALANCE_UNDERFLOW")
     this.balances.set(owner, prev - 1)
   }
+    // -----------------------------
+  // Extension hooks (for future overrides)
+  // -----------------------------
+
+  protected _beforeTokenTransfer(
+    from: Address,
+    to: Address,
+    tokenId: u64
+  ): void {
+    // Intentionally empty — extension contracts may override
+  }
+
+  protected _afterTokenTransfer(
+    from: Address,
+    to: Address,
+    tokenId: u64
+  ): void {
+    // Intentionally empty — extension contracts may override
+  }
+
 }
