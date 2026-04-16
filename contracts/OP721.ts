@@ -7,7 +7,8 @@ export class OP721 {
   @storage private tokenApprovals: Map<u64, Address> = new Map()
   @storage private operatorApprovals: Map<Address, Map<Address, bool>> = new Map()
   @storage private tokenURIs: Map<u64, string> = new Map()
-  // Reserved storage for future extensions (do not use now)
+
+  // Reserved storage for future extensions
   @storage private _reserved1: Map<string, string> = new Map()
   @storage private _reserved2: Map<string, string> = new Map()
 
@@ -110,10 +111,17 @@ export class OP721 {
       "NOT_AUTHORIZED"
     )
 
+    // BEFORE STATE CHANGES
+    this._beforeTokenTransfer(from, to, tokenId)
+
+    // STATE CHANGES
     this._clearApproval(tokenId)
     this._decreaseBalance(from)
     this._increaseBalance(to)
     this.owners.set(tokenId, to)
+
+    // AFTER STATE CHANGES
+    this._afterTokenTransfer(from, to, tokenId)
 
     emit("Transfer", from, to, tokenId)
   }
@@ -149,10 +157,16 @@ export class OP721 {
     assert(to != ZERO_ADDRESS, "ZERO_ADDRESS")
     assert(!this.owners.get(tokenId), "TOKEN_ALREADY_MINTED")
 
+    // BEFORE STATE CHANGES
+    this._beforeTokenTransfer(ZERO_ADDRESS, to, tokenId)
+
+    // STATE CHANGES
     this._increaseBalance(to)
     this.owners.set(tokenId, to)
-
     if (uri) this.tokenURIs.set(tokenId, uri)
+
+    // AFTER STATE CHANGES
+    this._afterTokenTransfer(ZERO_ADDRESS, to, tokenId)
 
     emit("Transfer", ZERO_ADDRESS, to, tokenId)
   }
@@ -160,10 +174,17 @@ export class OP721 {
   protected _burn(tokenId: u64): void {
     const owner = this.ownerOf(tokenId)
 
+    // BEFORE STATE CHANGES
+    this._beforeTokenTransfer(owner, ZERO_ADDRESS, tokenId)
+
+    // STATE CHANGES
     this._clearApproval(tokenId)
     this._decreaseBalance(owner)
     this.owners.delete(tokenId)
     this.tokenURIs.delete(tokenId)
+
+    // AFTER STATE CHANGES
+    this._afterTokenTransfer(owner, ZERO_ADDRESS, tokenId)
 
     emit("Transfer", owner, ZERO_ADDRESS, tokenId)
   }
@@ -191,8 +212,9 @@ export class OP721 {
     assert(prev > 0, "BALANCE_UNDERFLOW")
     this.balances.set(owner, prev - 1)
   }
-    // -----------------------------
-  // Extension hooks (for future overrides)
+
+  // -----------------------------
+  // Extension hooks (future overrides)
   // -----------------------------
 
   protected _beforeTokenTransfer(
@@ -200,7 +222,7 @@ export class OP721 {
     to: Address,
     tokenId: u64
   ): void {
-    // Intentionally empty — extension contracts may override
+    // empty for now
   }
 
   protected _afterTokenTransfer(
@@ -208,7 +230,7 @@ export class OP721 {
     to: Address,
     tokenId: u64
   ): void {
-    // Intentionally empty — extension contracts may override
+    // empty for now
   }
 
 }
