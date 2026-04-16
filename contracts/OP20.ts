@@ -17,7 +17,13 @@ export class OP20 {
   private _symbol: string
   private _decimals: u8
 
-  constructor(name: string, symbol: string, decimals: u8, initialOwner: Address, initialSupply: u64) {
+  constructor(
+    name: string,
+    symbol: string,
+    decimals: u8,
+    initialOwner: Address,
+    initialSupply: u64
+  ) {
     this._name = name
     this._symbol = symbol
     this._decimals = decimals
@@ -78,18 +84,15 @@ export class OP20 {
   transferFrom(from: Address, to: Address, amount: u64): bool {
     const spender = Context.sender()
 
-    // check allowance first
     const currentAllowance = this.allowance(from, spender)
     assert(currentAllowance >= amount, "INSUFFICIENT_ALLOWANCE")
 
     // BEFORE STATE CHANGES
     this._beforeTokenTransfer(from, to, amount)
 
-    // update balances
     this._decreaseBalance(from, amount)
     this._increaseBalance(to, amount)
 
-    // update allowance
     this._updateAllowance(from, spender, currentAllowance - amount)
 
     // AFTER STATE CHANGES
