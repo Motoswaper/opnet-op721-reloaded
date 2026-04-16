@@ -7,6 +7,9 @@ export class OP721 {
   @storage private tokenApprovals: Map<u64, Address> = new Map()
   @storage private operatorApprovals: Map<Address, Map<Address, bool>> = new Map()
   @storage private tokenURIs: Map<u64, string> = new Map()
+  // Reserved storage for future extensions (do not use now)
+  @storage private _reserved1: Map<string, string> = new Map()
+  @storage private _reserved2: Map<string, string> = new Map()
 
   private _name: string
   private _symbol: string
