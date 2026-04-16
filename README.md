@@ -1,70 +1,41 @@
-# OP721 Reloaded — Next‑Generation NFT Standard for OP_NET
+# OP_NET Standards — OP721 Reloaded & OP20 Reloaded
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Standard-OP721%20Reloaded-blueviolet?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Language-TypeScript-3178C6?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Network-OP__NET-orange?style=for-the-badge" />
-</p>
+This repository contains the canonical token standards for OP_NET:
 
-## Overview
+- **OP721 Reloaded** — Non‑fungible token (NFT) standard
+- **OP20 Reloaded** — Fungible token standard
 
-**OP721 Reloaded** is the official next‑generation NFT standard for **OP_NET**, designed for:
+Both are:
 
-- Wallets  
-- Marketplaces  
-- Indexers  
-- dApps  
-- DeFi protocols  
-- OP‑20 payment flows  
-
-It is fully ERC‑721 compatible while leveraging OP_NET’s WASM/TypeScript smart contract environment.
+- deterministic
+- minimal and opinionated
+- AssemblyScript‑based for the OP_NET VM
+- designed for indexers, DEXes, and marketplaces
 
 ---
 
-## Features
+## Contracts
 
-- 🔥 **Full ERC‑721 compatibility**  
-- 🧩 **Modular TypeScript contract architecture**  
-- 🔐 **Safe transfer enforcement**  
-- 🧱 **Receiver interface (IOP721Receiver)**  
-- 🪙 **OP‑20 payment compatibility**  
-- 🧭 **Indexer‑friendly event schema**  
-- 🛠 **Marketplace‑ready**  
-- 📦 **SDK + CLI support (coming soon)**  
+Located in `./contracts`:
 
----
+- `OP721.ts` — OP721 Reloaded NFT standard
+- `OP20.ts` — OP20 Reloaded fungible token standard
 
-## Repository Structure
-
-```
-contracts/
-  OP721.ts
-  interfaces/
-  utils/
-
-docs/
-  SPEC.md
-  MIGRATION.md
-  INTEGRATION.md
-
-tests/
-README.md
-LICENSE
-```
+Each contract exposes a stable public interface and frozen storage layout suitable for long‑term use.
 
 ---
 
 ## Documentation
 
-- **Specification** → `docs/SPEC.md`  
-- **Migration Guide** → `docs/MIGRATION.md`  
-- **Integration Guide** → `docs/INTEGRATION.md`  
-- **Whitepaper** → coming soon  
+Located in `./docs`:
+
+- `OP721.md` — OP721 interface, events, and behavior
+- `OP20.md` — OP20 interface, events, and behavior
+
+These documents define the expected external behavior for integrators (wallets, explorers, DEXes, marketplaces).
 
 ---
 
 ## License
 
-MIT License © 2026 OP_NET Contributors
+This repository is intended as a public good for the OP_NET ecosystem.
