@@ -47,5 +47,63 @@ Both standards are:
 
 ---
 
+---
+
+# 🧱 Standards Included
+
+## 🔵 OP721 Reloaded (NFT Standard)
+
+- `balanceOf`
+- `ownerOf`
+- `transferFrom`
+- `safeTransferFrom`
+- `approve`
+- `setApprovalForAll`
+- deterministic hooks  
+- frozen storage layout  
+- `"OP721_ACCEPTED"` receiver interface  
+
+📘 **Docs:** [`docs/OP721.md`](./docs/OP721.md)
+
+---
+
+## 🟢 OP20 Reloaded (Fungible Token Standard)
+
+- `transfer`
+- `approve`
+- `transferFrom`
+- `balanceOf`
+- `allowance`
+- deterministic mint/burn  
+- frozen storage layout  
+- short error codes  
+- indexer‑friendly events  
+
+📗 **Docs:** [`docs/OP20.md`](./docs/OP20.md)
+
+---
+
+# 🧩 Indexer Schemas
+
+These schemas define how explorers, DEXes, and marketplaces should index OP_NET events.
+
+- 🧩 [`INDEXER_OP721.md`](./docs/INDEXER_OP721.md)  
+- 🧮 [`INDEXER_OP20.md`](./docs/INDEXER_OP20.md)
+
+---
+
+# 📜 License
+
+MIT — open and free for the OP_NET ecosystem.
+
+---
+
+<div align="center">
+
+### Built for the OP_NET ecosystem  
+**Deterministic. Minimal. Future‑proof.**
+
+</div>
+
 # 📂 Repository Structure
 
