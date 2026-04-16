@@ -7,9 +7,9 @@ Modern, deterministic, production‑grade token standards for the OP_NET ecosyst
 
 <br>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](#)
-[![OP_NET](https://img.shields.io/badge/Network-OP__NET-blue.svg)](#)
-[![AssemblyScript](https://img.shields.io/badge/Language-AssemblyScript-purple.svg)](#)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+![OP_NET](https://img.shields.io/badge/Network-OP__NET-blue.svg)
+![AssemblyScript](https://img.shields.io/badge/Language-AssemblyScript-purple.svg)
 
 <br>
 
